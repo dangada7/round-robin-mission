@@ -51,26 +51,13 @@ public class UpdateRatingAsyncTask extends AsyncTask<Void, int[], Void> {
     @Override
     protected Void doInBackground(Void... params) {
 
-        randomNumber();
-        //sendHttpMessage();
-        return null;
-    }
-
-    //------------------------------------------------------
-    private void sendHttpMessage() {
-        System.out.println("Testing 1 - Send Http GET request");
-        try {
-            sendGet();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        System.out.println("Testing 2 - Send Http POST request");
+        //randomNumber();
         try {
             sendPost();
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     //------------------------------------------------------
@@ -131,40 +118,38 @@ public class UpdateRatingAsyncTask extends AsyncTask<Void, int[], Void> {
 
         //print result
         System.out.println(response.toString());
-
     }
 
     //------------------------------------------------------
     // HTTP POST request
     private void sendPost() throws Exception {
 
-        String url = "https://selfsolve.apple.com/wcResults.do";
-        String urlTest = "http://posttestserver.com/post.php";
+        //initialize url
+        //String urlStr = "http://requestb.in/tgbuqutg";                            //just for debug
+        String urlStr = "https://twentyfourwidgets.herokuapp.com/assets/multi";     //real url
 
-        URL obj = new URL(urlTest);
-        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+        URL url = new URL(urlStr);
+        HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
 
         //add reuqest header
         con.setRequestMethod("POST");
-        con.setRequestProperty("User-Agent", USER_AGENT);
-        con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+       // con.setRequestProperty("User-Agent", USER_AGENT);
+       // con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
 
-        String urlParameters = "sn=C02G8416DRJM&cn=&locale=&caller=&num=12345";
+        String body = "[105,11,10,162,44]";
 
         // Send post request
-        con.setDoOutput(true);
+        con.setDoOutput(true);      //Set the DoOutput flag to true if you intend to use the URL connection for output
         DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-        wr.writeBytes(urlParameters);
+        wr.writeBytes(body);
         wr.flush();
         wr.close();
 
-        int responseCode = con.getResponseCode();
-        System.out.println("\nSending 'POST' request to URL : " + url);
-        System.out.println("Post parameters : " + urlParameters);
-        System.out.println("Response Code : " + responseCode);
+        System.out.println("Sending 'POST' request to URL : " + urlStr);
+        System.out.println("Post body : " + body);
 
-        BufferedReader in = new BufferedReader(
-                new InputStreamReader(con.getInputStream()));
+        BufferedReader in = new BufferedReader( new InputStreamReader(con.getInputStream()));
+
         String inputLine;
         StringBuffer response = new StringBuffer();
 
@@ -174,7 +159,7 @@ public class UpdateRatingAsyncTask extends AsyncTask<Void, int[], Void> {
         in.close();
 
         //print result
-        System.out.println(response.toString());
+        System.out.println("response: " + response.toString());
 
     }
 

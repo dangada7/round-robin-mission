@@ -1,8 +1,8 @@
-round robin mission
-
+round robin mission \n					
+\n
 main activity: 
 1) listview 
-	for now there are 5 items. [105-facebook,11-apple,10-google,162-alibaba,44-twitter]
+	for now there are 5 items. [105-facebook,11-apple,10-google,162-alibaba,44-twitter] \n
 	every item contain icon name and rating.
 	in any giving moment the user can see only three items at a time
 2) storage

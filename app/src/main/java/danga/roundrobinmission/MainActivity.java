@@ -65,7 +65,7 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        savePerefrence();
+        savePreference();
 
         ListView listView = (ListView)this.findViewById(R.id.listView);
         CustomAdapter adapter = new CustomAdapter(this,PREFERENCE_COMPANY_INFO,companiesId);
@@ -101,7 +101,7 @@ public class MainActivity extends ActionBarActivity {
     }
 
     //-----------------------------------------------------
-    public void savePerefrence(){
+    public void savePreference(){
         SharedPreferences sharedPreferences = getSharedPreferences(PREFERENCE_COMPANY_INFO, Context.MODE_PRIVATE);
 
         boolean firstRun = sharedPreferences.getBoolean(PREFERENCE_FIRST_RUN,true);
