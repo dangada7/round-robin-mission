@@ -23,6 +23,10 @@ public class CustomAdapter extends BaseAdapter{
     String preferenceTableName;
     private int[] rating = {0,0,0,0,0};
     private int[] color;
+    private int green;
+    private int gray;
+    private int red;
+
 
     //-----------------------------------------------------------------------------
     public CustomAdapter(Context context,String preferenceTableName,String[] companiesId){
@@ -30,21 +34,36 @@ public class CustomAdapter extends BaseAdapter{
         this.preferenceTableName = preferenceTableName;
         this.companiesId=companiesId;
 
+        //init color status;
         color = new int[5];
         for (int i=0; i< color.length; i++)
             color[i] = context.getResources().getColor(R.color.gray);
+
+        //init the colors
+        green = context.getResources().getColor(R.color.green);
+        red = context.getResources().getColor(R.color.red);
+        gray = context.getResources().getColor(R.color.gray);
+
     }
     //-----------------------------------------------------------------------------
-    public void updateRating(int[] newRating){
+    public boolean updateRating(int[] newRating){
+        boolean needToNotify = false;
+
         for(int i=0; i<newRating.length; i++){
+            //if just one item change (rating change or color change ) then needToFind=true;
+            if(rating[i] != newRating[i] || color[i] != gray)
+                needToNotify=true;
+
             if(rating[i] < newRating[i])
-                color[i] = context.getResources().getColor(R.color.green);
+                color[i] = green;
             if(rating[i] > newRating[i])
-                color[i] = context.getResources().getColor(R.color.red);
+                color[i] = red;
             if(rating[i] == newRating[i])
-                color[i] = context.getResources().getColor(R.color.gray);
+                color[i] = gray;
             rating[i]=newRating[i];
         }
+
+        return needToNotify;
     }
     //-----------------------------------------------------------------------------
     @Override

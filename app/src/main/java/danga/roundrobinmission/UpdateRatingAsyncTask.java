@@ -21,8 +21,6 @@ public class UpdateRatingAsyncTask extends AsyncTask<Void, int[], Void> {
     private int[] values;
     private CustomAdapter adapter;
 
-    private final String USER_AGENT = "Mozilla/5.0";
-
     public UpdateRatingAsyncTask(CustomAdapter adapter) {
         this.adapter = adapter;
         values = new int[5];
@@ -37,8 +35,10 @@ public class UpdateRatingAsyncTask extends AsyncTask<Void, int[], Void> {
     //------------------------------------------------------
     @Override
     protected void onProgressUpdate(int[]... updateValues) {
-        adapter.updateRating(updateValues[0]);
-        adapter.notifyDataSetChanged();
+
+        boolean needToNotify = adapter.updateRating(updateValues[0]);
+        if (needToNotify)
+            adapter.notifyDataSetChanged();
     }
 
     //------------------------------------------------------
@@ -53,7 +53,8 @@ public class UpdateRatingAsyncTask extends AsyncTask<Void, int[], Void> {
 
         //randomNumber();
         try {
-            sendPost();
+            //sendPost();
+            sendGet();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -91,23 +92,20 @@ public class UpdateRatingAsyncTask extends AsyncTask<Void, int[], Void> {
     // HTTP GET request
     private void sendGet() throws Exception {
 
-        String url = "http://www.google.com/search?q=mkyong";
+        //initialize url
+        String urlStr = "http://requestb.in/tgbuqutg";                                //just for debug
+        //String urlStr = "https://twentyfourwidgets.herokuapp.com/assets/multi";     //real url
 
-        URL obj = new URL(url);
+        URL obj = new URL(urlStr);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
         // optional default is GET
         con.setRequestMethod("GET");
+        con.addRequestProperty("field","value");
 
-        //add request header
-        con.setRequestProperty("User-Agent", USER_AGENT);
+        System.out.println("Sending 'GET' request to URL : " + urlStr);
 
-        int responseCode = con.getResponseCode();
-        System.out.println("\nSending 'GET' request to URL : " + url);
-        System.out.println("Response Code : " + responseCode);
-
-        BufferedReader in = new BufferedReader(
-                new InputStreamReader(con.getInputStream()));
+        BufferedReader in = new BufferedReader( new InputStreamReader(con.getInputStream()));
         String inputLine;
         StringBuffer response = new StringBuffer();
 
@@ -117,7 +115,7 @@ public class UpdateRatingAsyncTask extends AsyncTask<Void, int[], Void> {
         in.close();
 
         //print result
-        System.out.println(response.toString());
+        System.out.println("response: " + response.toString());
     }
 
     //------------------------------------------------------
