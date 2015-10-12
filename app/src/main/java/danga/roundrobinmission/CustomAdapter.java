@@ -63,7 +63,7 @@ public class CustomAdapter extends BaseAdapter{
             if(oldAsset.spot != newAsset.spot || oldAsset.color != gray)
                 needToNotify=true;
             else
-                break;
+                continue;
 
             //set the color
             if(oldAsset.spot < newAsset.spot)
