@@ -19,61 +19,84 @@ import java.util.ArrayList;
 public class CustomAdapter extends BaseAdapter{
 
     private Context context;
-    String[] companiesId;
-    String preferenceTableName;
-    private int[] rating = {0,0,0,0,0};
-    private int[] color;
+    ArrayList<Asset> assetsList;
+
+    private String preferenceTableName;
+
     private int green;
     private int gray;
     private int red;
 
 
     //-----------------------------------------------------------------------------
-    public CustomAdapter(Context context,String preferenceTableName,String[] companiesId){
+    public CustomAdapter(Context context,String preferenceTableName,int[] companiesId){
         this.context = context;
         this.preferenceTableName = preferenceTableName;
-        this.companiesId=companiesId;
-
-        //init color status;
-        color = new int[5];
-        for (int i=0; i< color.length; i++)
-            color[i] = context.getResources().getColor(R.color.gray);
 
         //init the colors
         green = context.getResources().getColor(R.color.green);
         red = context.getResources().getColor(R.color.red);
         gray = context.getResources().getColor(R.color.gray);
 
-    }
-    //-----------------------------------------------------------------------------
-    public boolean updateRating(int[] newRating){
-        boolean needToNotify = false;
-
-        for(int i=0; i<newRating.length; i++){
-            //if just one item change (rating change or color change ) then needToFind=true;
-            if(rating[i] != newRating[i] || color[i] != gray)
-                needToNotify=true;
-
-            if(rating[i] < newRating[i])
-                color[i] = green;
-            if(rating[i] > newRating[i])
-                color[i] = red;
-            if(rating[i] == newRating[i])
-                color[i] = gray;
-            rating[i]=newRating[i];
+        //init assets
+        assetsList = new ArrayList<Asset>();
+        for (int i=0; i<companiesId.length; i++){
+            Asset asset = new Asset(companiesId[i],0,gray);
+            assetsList.add(asset);
         }
 
+
+
+    }
+    //-----------------------------------------------------------------------------
+    public boolean updateRating(ArrayList<Asset> newAssentsList){
+        boolean needToNotify = false;
+
+        for(Asset newAsset : newAssentsList){
+
+            //get the old asset
+            Asset oldAsset = getOldAsset(newAsset.assetId);
+            if (oldAsset==null)
+                break;
+
+            //if just one item change (rating change or color change ) then needToFind=true;
+            if(oldAsset.spot != newAsset.spot || oldAsset.color != gray)
+                needToNotify=true;
+            else
+                break;
+
+            //set the color
+            if(oldAsset.spot < newAsset.spot)
+                oldAsset.color = green;
+            if(oldAsset.spot > newAsset.spot)
+                oldAsset.color = red;
+            if(oldAsset.spot == newAsset.spot)
+                oldAsset.color = gray;
+            //set the spot
+            oldAsset.spot=newAsset.spot;
+
+        }//close for
+
         return needToNotify;
+    }
+
+    //-----------------------------------------------------------------------------
+    private Asset getOldAsset(int LookingForId) {
+        for(Asset asset: assetsList){
+            if (asset.assetId == LookingForId)
+                return asset;
+        }
+        return null;
     }
     //-----------------------------------------------------------------------------
     @Override
     public int getCount() {
-        return companiesId.length;
+        return assetsList.size();
     }
     //-----------------------------------------------------------------------------
     @Override
-    public String getItem(int position) {
-        return companiesId[position];
+    public Asset getItem(int position) {
+        return assetsList.get(position);
     }
     //-----------------------------------------------------------------------------
     @Override
@@ -84,15 +107,19 @@ public class CustomAdapter extends BaseAdapter{
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
-        int parentHeight = parent.getHeight();
-
         convertView = LayoutInflater.from(context).inflate(R.layout.list_item,parent,false);
-
+        //set the height of one list item
+        int parentHeight = parent.getHeight();
         convertView.getLayoutParams().height = parentHeight/3;
 
-        String companyId= companiesId[position];
+        //get the asset details
+        int companyId= getItem(position).assetId;
+        double spot = getItem(position).spot;
+        int color = getItem(position).color;
+
+        //get the asset name and icon from sharedPreferences
         SharedPreferences sharedPreferences = context.getSharedPreferences(preferenceTableName, context.MODE_PRIVATE);
-        String companyName = sharedPreferences.getString(companyId, "preference doest exist");
+        String companyName = sharedPreferences.getString(String.valueOf(companyId), "preference doest exist");
         int companyIcon = sharedPreferences.getInt(companyName,0);
 
         //set icon
@@ -103,9 +130,10 @@ public class CustomAdapter extends BaseAdapter{
         name.setText(companyName);
         //set value
         TextView rate = (TextView) convertView.findViewById(R.id.value);
-        rate.setText(String.valueOf(rating[position]));
-        rate.setTextColor(color[position]);
+        rate.setText(String.valueOf(spot));
+        rate.setTextColor(color);
 
         return convertView;
     }
+
 }

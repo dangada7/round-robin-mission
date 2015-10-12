@@ -1,63 +1,25 @@
 package danga.roundrobinmission;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.ListView;
-import android.widget.Toast;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.sql.SQLOutput;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.net.ssl.HttpsURLConnection;
 
 
 public class MainActivity extends ActionBarActivity {
 
+    private UpdateSpotAsyncTask updateRating;
+    private int[] companiesId = {105,11,10,162,44};
+    private final String TAG = "MainActivity";
 
-    private UpdateRatingAsyncTask updateRating;
-    private String[] companiesId = {"105","11","10","162","44"};
-    private int[] companiesIcon = {R.drawable.facebook_icon,R.drawable.apple_icon,R.drawable.google_icon,R.drawable.alibaba_icon,R.drawable.twitter_icon};
-    private String[] companiesName = {"FACEBOOK","APPLE","GOOGLE","ALIBABA","TWITTER"};
+    private final String PREFERENCE_ASSENT_INFO    =   "preference asset info";
+    //first run flag
+    private final String PREFERENCE_FIRST_RUN       =   "preference first run";
 
-    private final String PREFERENCE_COMPANY_INFO="preference company info";
-    private final String PREFERENCE_FIRST_RUN = "preference first run";
-
-    //-----------------------------------------------------
-    @Override
-    protected void onStop() {
-        super.onStop();
-        updateRating.cancel(true);
-    }
 
     //-----------------------------------------------------
     @Override
@@ -65,13 +27,15 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //insert the asset name and icon to shared preference data base.
         savePreference();
 
+
         ListView listView = (ListView)this.findViewById(R.id.listView);
-        CustomAdapter adapter = new CustomAdapter(this,PREFERENCE_COMPANY_INFO,companiesId);
+        CustomAdapter adapter = new CustomAdapter(this,PREFERENCE_ASSENT_INFO,companiesId);
         listView.setAdapter(adapter);
 
-        updateRating = new UpdateRatingAsyncTask(adapter);
+        updateRating = new UpdateSpotAsyncTask(adapter);
         updateRating.execute();
 
     }
@@ -102,38 +66,36 @@ public class MainActivity extends ActionBarActivity {
 
     //-----------------------------------------------------
     public void savePreference(){
-        SharedPreferences sharedPreferences = getSharedPreferences(PREFERENCE_COMPANY_INFO, Context.MODE_PRIVATE);
 
-        boolean firstRun = sharedPreferences.getBoolean(PREFERENCE_FIRST_RUN,true);
+        //basic info that need to get into the data base
+        final int[] companiesIcon = {R.drawable.facebook_icon,R.drawable.apple_icon,R.drawable.google_icon,R.drawable.alibaba_icon,R.drawable.twitter_icon};
+        final String[] companiesName = {"FACEBOOK","APPLE","GOOGLE","ALIBABA","TWITTER"};
 
-        System.out.println(firstRun);
+        //get the sharedPreferences
+        SharedPreferences sharedPreferences = getSharedPreferences(PREFERENCE_ASSENT_INFO, Context.MODE_PRIVATE);
+        boolean firstRun = sharedPreferences.getBoolean(PREFERENCE_FIRST_RUN, true);
 
+        Log.i(TAG,"first run: " + firstRun);
+        //only in the first run we update the shared preference
         if(firstRun){
             //insert all the company names
             SharedPreferences.Editor editor = sharedPreferences.edit();
-
+            //update the first run flag
             editor.putBoolean(PREFERENCE_FIRST_RUN, false);
-
+            //inert the data to the shared preference
             for(int i=0; i<companiesId.length; i++){
-                editor.putString(companiesId[i], companiesName[i]);
+                editor.putString(String.valueOf(companiesId[i]), companiesName[i]);
                 editor.putInt(companiesName[i], companiesIcon[i]);
             }
             editor.apply();
-        }
+        }// close if
     }
 
     //-----------------------------------------------------
-    public void showInfo(){
-        SharedPreferences sharedPreferences = getSharedPreferences(PREFERENCE_COMPANY_INFO, Context.MODE_PRIVATE);
-        String name =sharedPreferences.getString(companiesId[0], "preference does not exist");
-        int icon =sharedPreferences.getInt(companiesName[0], 0);
-
-        System.out.println(name);
-        System.out.println(String.valueOf(icon));
-
-        Toast.makeText(this,name,Toast.LENGTH_LONG).show();
-
+    @Override
+    protected void onStop() {
+        super.onStop();
+        //stop the background thread
+        updateRating.cancel(true);
     }
-
-
 }
